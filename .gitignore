@@ -11,3 +11,11 @@ coverage/
 .vite/
 *.tsbuildinfo
 .eslintcache
+
+# Project specific files to not leak
+firebase-applet-config.json
+firebase-blueprint.json
+DRAFT_firestore.rules
+security_spec.md
+*.pdf
+

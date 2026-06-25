@@ -1,28 +1,27 @@
-# StellarCare 🌟
+# StellarCare
 
-O **StellarCare** é um aplicativo moderno e *offline-first* voltado para o monitoramento clínico e registro de evolução de enfermagem em ambientes hospitalares. Construído com tecnologias web de ponta, ele fornece uma interface rápida e confiável para enfermeiros e técnicos acompanharem pacientes, registrarem sinais vitais e usarem inteligência artificial como assistente clínico em tempo real.
+O StellarCare é uma aplicação web offline-first para registro de evolução de enfermagem e monitoramento de leitos.
 
-## 🚀 Principais Funcionalidades
+## Funcionalidades
 
-- **Gestão de Pacientes:** Admissão, transferência e alta de pacientes.
-- **Painel de Monitoramento (Dashboard):** Visualização em tempo real do status dos leitos, incluindo triagem de risco através de cores e alertas baseados em sinais vitais críticos.
-- **Evolução de Enfermagem Completa:** Formulários estruturados para registros de sinais vitais (Temperatura, SpO2, Dor, PA, FC, FR) e diurese, acompanhados de evolução descritiva textual (SOAP).
-- **Assistente Clínico IA (Google Gemini):** Auxílio inteligente, seguro e integrado que analisa em tempo real os sinais vitais e as anotações do paciente para sugerir diagnósticos de enfermagem e protocolos de ação.
-- **Funcionamento Offline-First:** O aplicativo não para de funcionar sem internet. Novas evoluções e admissões são guardadas em uma fila de sincronização segura no dispositivo local e transmitidas automaticamente ao servidor assim que a conexão é restabelecida.
-- **Sincronização em Tempo Real:** Atualizações feitas em um dispositivo (ex: alta de um paciente) refletem instantaneamente nos demais dispositivos da mesma equipe através de subscrições ativas (`onSnapshot`) com o Cloud Firestore.
-- **Validação de Matrícula e Perfis:** O cargo do profissional (Enfermeiro, Técnico de Enfermagem ou Auxiliar) é preenchido e validado automaticamente com base no padrão da matrícula inserida, bloqueando adulterações não autorizadas.
-- **Geração de Prontuários (PDF):** Exportação rápida e completa do histórico clínico do paciente em formato PDF, ideal para auditorias, documentação física ou transferência de paciente.
+- **Gestão de Pacientes:** Admissão, transferência e alta.
+- **Painel de Monitoramento:** Visualização do status dos leitos, triagem de risco e alertas baseados em sinais vitais.
+- **Evolução de Enfermagem:** Registro de sinais vitais (Temperatura, SpO2, Dor, PA, FC, FR), diurese e evolução em formato texto.
+- **Assistente Clínico (Integração Google Gemini):** Análise de sinais vitais e anotações para sugestão de diagnósticos e condutas de enfermagem.
+- **Sincronização Offline-First:** Persistência local de registros (admissões e evoluções) na ausência de rede, com sincronização em fila ("background sync") com o servidor.
+- **Comunicação em Tempo Real:** Atualização de dados entre instâncias utilizando subscrições (`onSnapshot`) no Cloud Firestore.
+- **Controle de Perfil por Matrícula:** Definição do cargo (Enfermeiro, Técnico de Enfermagem ou Auxiliar) determinada pelo padrão alfanumérico da matrícula do profissional.
+- **Exportação em PDF:** Geração de documento PDF contendo o histórico de registros e evoluções do paciente.
 
-## 🛠️ Tecnologias Utilizadas
+## Stack Tecnológico
 
-- **Frontend:** [React 18](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/)
-- **Build & Dev:** [Vite](https://vitejs.dev/)
-- **Estilização:** [Tailwind CSS](https://tailwindcss.com/)
-- **Banco de Dados / Backend:** [Firebase Cloud Firestore](https://firebase.google.com/docs/firestore)
-- **Autenticação:** [Firebase Authentication](https://firebase.google.com/docs/auth)
-- **Inteligência Artificial:** [Google Gemini API](https://deepmind.google/technologies/gemini/)
-- **Ícones e Layout:** [Lucide React](https://lucide.dev/) e [Framer Motion](https://www.framer.com/motion/)
-- **Utilitários:** `jspdf` para geração dos laudos no navegador e gerenciamento unificado de estado com Hooks.
+- **Frontend:** React 18, TypeScript
+- **Ferramentas de Build:** Vite
+- **Estilização:** Tailwind CSS
+- **Banco de Dados / Backend:** Firebase Cloud Firestore
+- **Autenticação:** Firebase Authentication
+- **Inteligência Artificial:** Google Gemini API
+- **Bibliotecas Auxiliares:** Lucide React, Framer Motion, jsPDF
 
 ## 📂 Estrutura do Projeto
 
@@ -44,6 +43,7 @@ O **StellarCare** é um aplicativo moderno e *offline-first* voltado para o moni
 ## ⚙️ Instalação e Execução
 
 ### Pré-requisitos
+
 - [Node.js](https://nodejs.org/en/) (Recomendado v18+)
 - Conta ativa no [Firebase](https://firebase.google.com/) com um projeto configurado (Firestore e Auth ativados)
 - Chave de API do [Google Gemini](https://aistudio.google.com/app/apikey) (Para uso do módulo Assistente Clínico IA)
@@ -51,12 +51,14 @@ O **StellarCare** é um aplicativo moderno e *offline-first* voltado para o moni
 ### Passos para Uso Local
 
 1. **Clone o repositório:**
+
    ```bash
    git clone https://github.com/seu-usuario/stellarcare.git
    cd stellarcare
    ```
 
 2. **Instale as dependências essenciais:**
+
    ```bash
    npm install
    ```
@@ -65,9 +67,11 @@ O **StellarCare** é um aplicativo moderno e *offline-first* voltado para o moni
    Configure seu próprio arquivo `.env` para apontar ao seu projeto Firebase ou configure as chaves na plataforma em que for hospedar (como Vercel, Netlify ou Google Cloud Run). O `firebase-applet-config.json` poderá requerer ajuste dependo de seu tenant.
 
 4. **Inicie o servidor de desenvolvimento:**
+
    ```bash
    npm run dev
    ```
+
    Acesse a aplicação em `http://localhost:3000` (porta padrão via Vite).
 
 5. **Construção para Produção (Build):**
@@ -83,7 +87,8 @@ O **StellarCare** é um aplicativo moderno e *offline-first* voltado para o moni
 
 ## 🤝 Contribuindo
 
-Contribuições são fundamentais para evoluirmos! Sinta-se à vontade para enviar um *Pull Request*, relatar bugs nas *Issues*, ou sugerir melhorias de usabilidade. Tudo em prol de um sistema de saúde mais tecnológico, ágil e livre de complicações!
+Contribuições são fundamentais para evoluirmos! Sinta-se à vontade para enviar um _Pull Request_, relatar bugs nas _Issues_, ou sugerir melhorias de usabilidade. Tudo em prol de um sistema de saúde mais tecnológico, ágil e livre de complicações!
 
 ---
-*StellarCare — Desenvolvido com foco no cuidado humano e precisão técnica.*
+
+_StellarCare — Desenvolvido com foco no cuidado humano e precisão técnica._
