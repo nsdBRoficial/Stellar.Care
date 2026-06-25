@@ -1,0 +1,6 @@
+{
+  "name": "Stellar Care",
+  "description": "Aplicativo de sistematização e controle de evoluções de enfermagem com triagem de sinais vitais, validação assistencial baseada em inteligência clínica e registro seguro SHA256.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

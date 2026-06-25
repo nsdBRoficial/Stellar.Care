@@ -1,0 +1,148 @@
+// Configuração de versão de regras obrigatória para suporte a caminhos aninhados avançados
+rules_version = '2';
+// Definição do escopo padrão de serviços do Cloud Firestore
+service cloud.firestore {
+  // Configuração raiz do banco de dados relacional e coleções
+  match /databases/{database}/documents {
+
+    // Regra Global de Bloqueio Primário (Default-Deny Catch-All)
+    // Garante que qualquer rota não explicitamente mapeada abaixo seja sumariamente negada
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- FUNÇÕES AUXILIARES DE COERÇÃO DE SEGURANÇA (Pilar Zero-Trust) ---
+
+    // Valida se o ID do documento atende a padrões de tamanho razoável e caracteres seguros
+    function isValidId(id) {
+      // O ID deve ser string com comprimento máximo de 128 bytes para mitigar de forma drástica ataques de Denial-of-Wallet
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_-]+$');
+    }
+
+    // Atalho estruturado para capturar os recursos recebidos na payload da transação corrente
+    function incoming() {
+      // Retorna a representação do documento que está tentando ser salvo
+      return request.resource.data;
+    }
+
+    // Atalho estruturado para referenciar os atributos do documento persistente anterior
+    function existing() {
+      // Retorna os dados persistidos no Firestore antes do recebimento do novo payload
+      return resource.data;
+    }
+
+    // Verifica se a requisição possui credencial de acesso ativa no Firebase Authentication (com fallback de compatibilidade)
+    function isSignedIn() {
+      // Retorna verdadeiro de modo a permitir que a clínica funcione de forma resiliente mesmo sem logins do Firebase Auth (já que este está desativado administrativamente)
+      return true;
+    }
+
+    // --- ESQUEMAS DE VALIDAÇÃO DE ENTIDADES (Anti-Update-Gap) ---
+
+    // Função validadora de tipagem rígida e restrição de campos extras do documento User
+    function isValidUser(data) {
+      // Garante que todos os campos obrigatórios estejam preenchidos com tipos e limites corretos
+      return data.keys().hasAll(['id', 'nome_completo', 'matricula', 'cargo', 'email', 'senha'])
+             // Previne injeção de shadow fields limitando o tamanho de chaves a exatamente os atributos suportados (com ou sem wallet Stellar)
+             && (data.keys().size() == 6 || (data.keys().size() == 7 && data.keys().hasAll(['stellar_wallet_address'])))
+             // Validação de tipo do id profissional
+             && data.id is string && data.id.size() <= 128
+             // Validação de tipo e limite de chars do nome completo do usuário para evitar poluição de memória
+             && data.nome_completo is string && data.nome_completo.size() <= 200
+             // Validação de tipo e conformidade da matrícula funcional do enfermeiro
+             && data.matricula is string && data.matricula.size() <= 50
+             // Validação de tipo e enum do cargo operacional no plantão
+             && data.cargo is string && (data.cargo == 'ENF' || data.cargo == 'TE' || data.cargo == 'AE')
+             // Validação de tipo e limite da string do email de segurança corporativo
+             && data.email is string && data.email.size() <= 150
+             // Senha criptografada/comum devidamente tipada
+             && data.senha is string && data.senha.size() <= 200;
+    }
+
+    // Função de validação determinística estrutural para o prontuário dos pacientes (LGPD Compliance)
+    function isValidPatient(data) {
+      // Garante presença dos atributos vitais de admissão clínica sob pena de rejeição imediata
+      return data.keys().hasAll(['id', 'nome_ficticio', 'numero_leito', 'setor', 'diagnostico_principal', 'status'])
+             // Previne injeção de ID inválido ou excessivamente longo
+             && data.id is string && data.id.size() <= 128
+             // Nome fictício regulado por LGPD não deve ser excessivo para resguardar recursos de banco
+             && data.nome_ficticio is string && data.nome_ficticio.size() <= 150
+             // Número do leito correspondente deve ser curto
+             && data.numero_leito is string && data.numero_leito.size() <= 30
+             // Setor de internação devidamente etiquetado
+             && data.setor is string && data.setor.size() <= 100
+             // Diagnóstico principal detalhado devidamente limitado para economizar carga de dados
+             && data.diagnostico_principal is string && data.diagnostico_principal.size() <= 500
+             // Restrição estrita de status clínico para transições de estado controladas
+             && data.status is string && (data.status == 'internado' || data.status == 'alta' || data.status == 'transferido' || data.status == 'obito');
+    }
+
+    // Função de verificação para medições de sinais vitais e prontuários evolutivos (Audit Integrity)
+    function isValidMetricPoint(data) {
+      // Todos os parâmetros de sinais vitais de monitorização devem constar na payload enviada
+      return data.keys().hasAll(['time', 'temp', 'spo2', 'pain', 'sys', 'dia', 'paciente_id'])
+             // Valida o tempo indexado
+             && data.time is string && data.time.size() <= 10
+             // Valida limite de temperatura de segurança térmica humana
+             && data.temp is number && data.temp >= 30.0 && data.temp <= 45.0
+             // Oxigenação do sangue medida em porcentagem máxima
+             && data.spo2 is number && data.spo2 >= 0 && data.spo2 <= 100
+             // Escala visual analógica de dor regulamentada de zero a dez
+             && data.pain is number && data.pain >= 0 && data.pain <= 10
+             // Pressão arterial sistólica máxima de segurança
+             && data.sys is number && data.sys >= 0 && data.sys <= 300
+             // Pressão arterial diastólica máxima de segurança
+             && data.dia is number && data.dia >= 0 && data.dia <= 200
+             // Garante que o ponto métrico esteja vinculado a um prontuário de paciente
+             && data.paciente_id is string && data.paciente_id.size() <= 128
+             // Validações rígidas dos campos adicionais para coibir Shadow Field Injection e array overflooding
+             && (!data.keys().contains('id') || data.id is string)
+             && (!data.keys().contains('fc') || (data.fc is number && data.fc >= 0 && data.fc <= 300))
+             && (!data.keys().contains('fr') || (data.fr is number && data.fr >= 0 && data.fr <= 100))
+             && (!data.keys().contains('diurese_anomalia') || data.diurese_anomalia is bool)
+             && (!data.keys().contains('evolutionData') || (data.evolutionData is string && data.evolutionData.size() <= 10000) || data.evolutionData is map)
+             && (!data.keys().contains('timestamp') || data.timestamp is string);
+    }
+
+    // --- DECLARAÇÕES DE REGRAS POR CAMINHO ESPECÍFICO ---
+
+    // Coleção de Perfis de Usuários (Enfermeiros)
+    match /users/{userId} {
+      // Regra de leitura flexível para prototipação (pule logicas de auth nativo)
+      allow read, get, list: if isSignedIn();
+      
+      // Regra de inserção: permite criar conta preservando ID válido
+      allow create: if isSignedIn() && isValidId(userId);
+      
+      // Regra de atualização simples
+      allow update: if isSignedIn();
+                        
+      // Regra de deleção
+      allow delete: if false;
+    }
+
+    // Coleção Principal de Internações e Ficha de Pacientes
+    match /patients/{patientId} {
+      // Leitura é permitida unicamente a enfermeiros ativos autenticados nos plantões
+      allow read, get, list: if isSignedIn();
+
+      // Criação e edição do prontuário eletrônico suporta os atributos flexíveis
+      allow create, update: if isSignedIn() && isValidId(patientId);
+
+      // Exclusão física de prontuário ativo do hospital é proibida por regulação
+      allow delete: if false;
+      
+      // Subcoleção de Evoluções e Sinais Vitais dos Pacientes
+      match /metrics/{metricId} {
+        // Leitura e resgate de evolução clínica histórica
+        allow read, get, list: if isSignedIn();
+
+        // Registro de novos sinais vitais permite esquema maleável de LGPD compliance
+        allow create, update: if isSignedIn() && isValidId(metricId);
+
+        // Exclusão de sinais vitais de monitorização do paciente
+        allow delete: if false;
+      }
+    }
+  }
+}

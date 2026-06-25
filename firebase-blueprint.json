@@ -1,0 +1,97 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile collection inside StellarCare containing institutional nursing details linked to auth UID.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "The unique user authentication ID." },
+        "nome_completo": { "type": "string", "description": "Full legal name of the clinical operator." },
+        "matricula": { "type": "string", "description": "Institutional registry id corresponding to the role." },
+        "cargo": { "type": "string", "enum": ["ENF", "TE", "AE"], "description": "User nursing category." },
+        "email": { "type": "string", "description": "Official clinician email." },
+        "stellar_wallet_address": { "type": "string", "description": "Generated Stellar Ledger public key identifier." }
+      },
+      "required": ["id", "nome_completo", "matricula", "cargo", "email"]
+    },
+    "Patient": {
+      "title": "Patient",
+      "description": "Active patients admitted into the clinical ward.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "The unique patient random/explicit identifier." },
+        "nome_ficticio": { "type": "string", "description": "Fake name used for PII compliant shifts." },
+        "data_nascimento": { "type": "string", "description": "Strict birth date representation." },
+        "idade_aparente": { "type": "number", "description": "Visual age indicator." },
+        "sexo": { "type": "string", "enum": ["M", "F", "O", "I"], "description": "Biological sex." },
+        "numero_leito": { "type": "string", "description": "Bed allocation." },
+        "setor": { "type": "string", "description": "Section of the clinic." },
+        "diagnostico_principal": { "type": "string", "description": "Chief complaint / Diagnosis." },
+        "data_internacao": { "type": "string", "description": "Check-in time." },
+        "medico_responsavel": { "type": "string", "description": "Physician in charge." },
+        "tecnico_responsavel": {
+          "type": "object",
+          "description": "Assigned technician profile of current shift.",
+          "properties": {
+            "nome": { "type": "string" },
+            "matricula": { "type": "string" }
+          }
+        },
+        "tecnicos_adicionais": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "nome": { "type": "string" },
+              "matricula": { "type": "string" }
+            }
+          }
+        },
+        "alergias": { "type": "string" },
+        "convenio": { "type": "string" },
+        "observacoes": { "type": "string" },
+        "status": { "type": "string", "enum": ["internado", "alta", "transferido", "obito"] },
+        "unidade_transferencia": { "type": "string" },
+        "medico_alta": { "type": "string" },
+        "observacoes_alta": { "type": "string" },
+        "criado_em": { "type": "string" }
+      },
+      "required": ["id", "nome_ficticio", "numero_leito", "setor", "diagnostico_principal", "status"]
+    },
+    "MetricPoint": {
+      "title": "MetricPoint",
+      "description": "Vital signs and clinical metrics gathered offline or online during evolutions.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "paciente_id": { "type": "string", "description": "The patient owner of this record." },
+        "time": { "type": "string" },
+        "temp": { "type": "number" },
+        "spo2": { "type": "number" },
+        "pain": { "type": "number" },
+        "sys": { "type": "number" },
+        "dia": { "type": "number" },
+        "fc": { "type": "number" },
+        "fr": { "type": "number" },
+        "diurese_anomalia": { "type": "boolean" },
+        "evolutionData": { "type": "object", "description": "Rich evolution data structure or clinical text" },
+        "timestamp": { "type": "string" }
+      },
+      "required": ["time", "temp", "spo2", "pain", "sys", "dia", "paciente_id"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles linked to their Firebase Auth UID."
+    },
+    "/patients/{patientId}": {
+      "schema": "Patient",
+      "description": "Patients recorded under the clinic directory."
+    },
+    "/patients/{patientId}/metrics/{metricId}": {
+      "schema": "MetricPoint",
+      "description": "Chronological clinical measures for each active patient."
+    }
+  }
+}
